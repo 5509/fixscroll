@@ -9,9 +9,9 @@
 		var i,
 			self = this;
 
-		if ( self === window ) {
-			return new FixScroll(elm, options);
-		}
+//		if ( self === window ) {
+//			return new FixScroll(elm, options);
+//		}
 
 		self.opts = {
 			from: 'current',
@@ -53,15 +53,11 @@
 					_ml = _parseInt(bodyCss['margin-left']),
 					_pt = _parseInt(bodyCss['padding-top']),
 					_pl = _parseInt(bodyCss['padding-top']);
-				
+
 				return {
 					top: _mt + _pt,
 					left: _ml + _pl
 				};
-//				return {
-//					top: 0,
-//					left: 0
-//				}
 			}());
 
 			self.defaultPos = {
@@ -100,10 +96,15 @@
 		},
 		_scroll: function() {
 			var self = this;
+//			_addEvent(window, self.id + '.hogehoge', function() {
+//				console.log('scrolling');
+//			});
 			_addEvent(window, 'scroll', function(e) {
 				var scrollTop = b.scrollTop || dE.scrollTop,
 					sumTop = self.defaultPos.top - self.opts.top,
 					borderTop = sumTop < 0 ? 0 : sumTop;
+
+//				_trigger(window, self.id + 'hogehoge');
 
 				// triggered
 				if ( scrollTop >= borderTop ) {
@@ -125,12 +126,15 @@
 
 	function _trigger(elm, listener) {
 		var evtObj = undefined;
-		if ( 'fireEvent' in document ) {
-			elm.fireEvent(listener);
-		} else {
+		if ( 'createEvent' in document ) {
 			evtObj = document.createEvent('UIEvents');
 			evtObj.initEvent(listener, false, true);
 			elm.dispatchEvent(evtObj);
+		} else
+		if ( 'createEventObject' in document ) {
+			evtObj = document.createEventObject();
+			evtObj.name = listener;
+			elm.fireEvent('ondataavailable', evtObj);
 		}
 	}
 
@@ -138,8 +142,14 @@
 		if ( window.addEventListener ) {
 			elm.addEventListener(listener, func, false);
 		} else {
-			if ( listener.indexOf('.') !== -1 ) {
-				elm.attachEvent(listener, func);
+			if ( !elm[listener] ) {
+				elm.attachEvent('ondataavailable', function(evtObj) {
+					evtObj.func = evtObj.func || {};
+					evtObj.func[listener] = func;
+
+					if ( !evtObj.func[evtObj.name] ) return;
+					evtObj.func[evtObj.name]();
+				});
 			} else {
 				elm.attachEvent('on' + listener, func);
 			}
