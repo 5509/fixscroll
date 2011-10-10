@@ -3,7 +3,16 @@
 <head>
 <style>
 
-	.box {
+	#log {
+		width: 200px;
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		color: #fff;
+		background: #666;
+	}
+
+	#box {
 		padding: 150px 0;
 		width: 200px;
 		height: 3000px;
@@ -46,7 +55,7 @@
 </head>
 <body>
 
-<div class="box">
+<div id="box">
 	<div class="box-header">box-header</div>
 
 	<div id="flex-box">flexible position</div>
@@ -54,11 +63,12 @@
 	<div class="box-footer">box-footer</div>
 </div>
 
+<div id="log"></div>
+
 <script src="src/fixscroll.js"></script>
 <script>
-	new FixScroll('flex-box', {
-		from: 'current',
-		to: 'parent'
+	FixScroll('flex-box', {
+		parent: 'box'
 	});
 </script>
 </body>

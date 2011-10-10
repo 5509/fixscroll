@@ -1,18 +1,37 @@
 (function(window, document, undefined) {
 
+	// Todo
+	// parentを指定すると
+	// parent.height + parent.paddingBottom がlockのボーダーになる
+
 	window.FixScroll = FixScroll;
 
 	var b = document.body,
-		dE = document.documentElement;
+		dE = document.documentElement,
+		ua = (function() {
+			var txt = window.navigator.userAgent;
+			return {
+				msie: txt.indexOf('MSIE') !== -1,
+				version: (function() {
+					if ( txt.match(/MSIE (\d\.\d)/) ) {
+						return RegExp.$1;
+					}
+				}())
+			}
+		}());
 
 	function FixScroll(elm, options) {
 		var i,
 			self = this;
 
-//		if ( self === window ) {
-//			return new FixScroll(elm, options);
-//		}
+		// IE7以上
+		if ( ua.msie && ua.version < 7 ) return;
+		// newがなくてもOK
+		if ( self === window ) {
+			return new FixScroll(elm, options);
+		}
 
+		// オプション
 		self.opts = {
 			from: 'current',
 			to: 'parent',
@@ -27,6 +46,7 @@
 			self.opts[i] = options[i];
 		}
 
+		// 初期化
 		self._init();
 	}
 
@@ -42,7 +62,6 @@
 				bodyCss,
 				adjustment = null;
 
-			// IE見検証
 			if ( window.getComputedStyle ) {
 				bodyCss = getComputedStyle(b);
 			} else {
@@ -55,8 +74,8 @@
 					_pl = _parseInt(bodyCss['padding-top']);
 
 				return {
-					top: _mt + _pt,
-					left: _ml + _pl
+					top: (_mt + _pt) || 0,
+					left: (_ml + _pl) || 0
 				};
 			}());
 
@@ -77,7 +96,6 @@
 		},
 		_setFix: function() {
 			var self = this;
-			// とりあえずfixed
 			_styles(self.elm, {
 				position: 'fixed',
 				top: self.opts.top + 'px'
@@ -86,25 +104,18 @@
 		_bind: function() {
 			var self = this;
 			_addEvent(self.elm, self.id + '.locked', function() {
-				console.log('locked');
 				self._setFix();
 			});
 			_addEvent(self.elm, self.id + '.unlocked', function() {
-				console.log('unlocked');
 				self._setDefault();
 			});
 		},
 		_scroll: function() {
 			var self = this;
-//			_addEvent(window, self.id + '.hogehoge', function() {
-//				console.log('scrolling');
-//			});
-			_addEvent(window, 'scroll', function(e) {
+			_addEvent(window, 'scroll', function() {
 				var scrollTop = b.scrollTop || dE.scrollTop,
 					sumTop = self.defaultPos.top - self.opts.top,
 					borderTop = sumTop < 0 ? 0 : sumTop;
-
-//				_trigger(window, self.id + 'hogehoge');
 
 				// triggered
 				if ( scrollTop >= borderTop ) {
@@ -149,6 +160,7 @@
 
 					if ( !evtObj.func[evtObj.name] ) return;
 					evtObj.func[evtObj.name]();
+					evtObj.name = null;
 				});
 			} else {
 				elm.attachEvent('on' + listener, func);
