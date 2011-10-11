@@ -24,17 +24,16 @@
 		var i,
 			self = this;
 
-		// IE7以上
+		// higher than IE7
 		if ( ua.msie && ua.version < 7 ) return;
-		// newがなくてもOK
+		// new is not necessary
 		if ( self === window ) {
 			return new FixScroll(elm, options);
 		}
 
-		// オプション
+		// options
 		self.opts = {
-			from: 'current',
-			to: 'parent',
+			parent: 'body',
 			top: 0,
 			bottom: 0
 		};
@@ -46,7 +45,7 @@
 			self.opts[i] = options[i];
 		}
 
-		// 初期化
+		// init
 		self._init();
 	}
 
@@ -62,10 +61,19 @@
 				bodyCss,
 				adjustment = null;
 
+			self.parent = self.opts.parent === 'body'
+				? document.body
+				: document.getElementById(self.opts.parent);
+
+			self.offsetHeight = self.elm.offsetHeight;
+			self.parentHeight = self.parent.offsetHeight;
+
 			if ( window.getComputedStyle ) {
 				bodyCss = getComputedStyle(b);
+				parentCss = getComputedStyle(self.parent);
 			} else {
 				bodyCss = b.currentStyle;
+				parentCss = self.parent.currentStyle;
 			}
 			adjustment = (function() {
 				var _mt = _parseInt(bodyCss['margin-top']),
@@ -80,8 +88,11 @@
 			}());
 
 			self.defaultPos = {
+				position: bodyCss.position,
 				adjTop: adjustment.top,
 				adjLeft: adjustment.left,
+				ptPdgTop: _parseInt(parentCss['padding-top']),
+				ptPdgBtm: _parseInt(parentCss['padding-bottom']),
 				top: adjustment.top + self.elm.offsetTop,
 				left: adjustment.left + self.elm.offsetLeft
 			};
@@ -89,9 +100,8 @@
 		_setDefault: function() {
 			var self = this;
 			_styles(self.elm, {
-				position: 'static',
-				top: self.defaultPos.top + 'px'//,
-				//left: self.defaultPos.left + 'px'
+				position: self.defaultPos.position,
+				top: self.defaultPos.top + 'px'
 			});
 		},
 		_setFix: function() {
@@ -99,6 +109,13 @@
 			_styles(self.elm, {
 				position: 'fixed',
 				top: self.opts.top + 'px'
+			});
+		},
+		_bottomFix: function() {
+			var self = this;
+			_styles(self.elm, {
+				position: 'absolute',
+				top: self.bottomFix + 'px'
 			});
 		},
 		_bind: function() {
@@ -109,19 +126,34 @@
 			_addEvent(self.elm, self.id + '.unlocked', function() {
 				self._setDefault();
 			});
+			_addEvent(self.elm, self.id + '.bottomlocked', function() {
+				self._bottomFix();
+			});
 		},
 		_scroll: function() {
 			var self = this;
 			_addEvent(window, 'scroll', function() {
 				var scrollTop = b.scrollTop || dE.scrollTop,
-					sumTop = self.defaultPos.top - self.opts.top,
-					borderTop = sumTop < 0 ? 0 : sumTop;
+					defPos = self.defaultPos,
+					sumTop = defPos.top - self.opts.top,
+					borderTop = sumTop < 0 ? 0 : sumTop,
+					vScrollTop = scrollTop + self.offsetHeight,
+					vBorderTop = self.parentHeight + defPos.adjTop - defPos.ptPdgBtm;
 
 				// triggered
-				if ( scrollTop >= borderTop ) {
+				// locked (fixed
+				if ( scrollTop >= borderTop && vScrollTop < vBorderTop ) {
 					if ( self.state === 'locked' ) return;
 					self.state = 'locked';
-					_trigger(self.elm, self.id + '.locked')
+					_trigger(self.elm, self.id + '.locked');
+				} else
+				// bottomlocked (bottomfixed
+				if ( vScrollTop >= vBorderTop ) {
+					if ( self.state === 'bottomlocked' ) return;
+					self.bottomFix = self.parentHeight - self.offsetHeight - defPos.ptPdgBtm;
+					self.state = 'bottomlocked';
+					_trigger(self.elm, self.id + '.bottomlocked');
+				// unlocked (not fixed
 				} else {
 					if ( self.state === 'unlocked' ) return;
 					self.state = 'unlocked';

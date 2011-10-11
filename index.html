@@ -1,69 +1,64 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<title>FixScroll</title>
 <style>
 
-	#log {
-		width: 200px;
-		position: absolute;
-		top: 5px;
-		right: 5px;
-		color: #fff;
-		background: #666;
+	.boxParent {
+		height: 5000px;
+		background: #555;
 	}
 
-	#box {
-		padding: 150px 0;
-		width: 200px;
-		height: 3000px;
-		position: relative;
-		background: #999;
-	}
-
-		.box-header {
-			width: 200px;
-			height: 150px;
-			position: absolute;
-			top: 0;
-			left: 0;
-			background: #eee;
-			line-height: 150px;
-			text-align: center;
+		#box {
+			padding: 150px 0;
+			width: 400px;
+			height: 3000px;
+			position: relative;
+			background: #999;
 		}
 
-		#flex-box {
-			width: 200px;
-			height: 150px;
-			background: #f00;
-			line-height: 150px;
-			text-align: center;
-		}
+			.box-header {
+				width: 400px;
+				height: 150px;
+				position: absolute;
+				top: 0;
+				left: 0;
+				background: #eee;
+				line-height: 150px;
+				text-align: center;
+			}
 
-		.box-footer {
-			width: 200px;
-			height: 150px;
-			position: absolute;
-			bottom: 0;
-			left: 0;
-			background: #eee;
-			line-height: 150px;
-			text-align: center;
-		}
+			#flex-box {
+				width: 400px;
+				height: 150px;
+				background: #f00;
+				line-height: 150px;
+				text-align: center;
+			}
+
+			.box-footer {
+				width: 400px;
+				height: 150px;
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				background: #eee;
+				line-height: 150px;
+				text-align: center;
+			}
 
 </style>
 
 </head>
 <body>
 
-<div id="box">
-	<div class="box-header">box-header</div>
-
-	<div id="flex-box">flexible position</div>
-
-	<div class="box-footer">box-footer</div>
+<div class="boxParent">
+	<div id="box">
+		<div class="box-header">box-header</div>
+		<div id="flex-box">flexible position</div>
+		<div class="box-footer">box-footer</div>
+	</div>
 </div>
-
-<div id="log"></div>
 
 <script src="src/fixscroll.js"></script>
 <script>
