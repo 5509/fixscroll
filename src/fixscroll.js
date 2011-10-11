@@ -47,6 +47,7 @@
 		self.elm = document.getElementById(elm);
 		self.id = elm; // id => id
 		self.state = 'unlocked';
+		self.callback = {};
 
 		for ( i in options ) {
 			self.opts[i] = options[i];
@@ -129,12 +130,21 @@
 			var self = this;
 			_addEvent(self.elm, self.id + '.locked', function() {
 				self._setFix();
+				if ( self.callback.locked ) {
+					self.callback.locked();
+				}
 			});
 			_addEvent(self.elm, self.id + '.unlocked', function() {
 				self._setDefault();
+				if ( self.callback.unlocked ) {
+					self.callback.unlocked();
+				}
 			});
 			_addEvent(self.elm, self.id + '.bottomlocked', function() {
 				self._bottomFix();
+				if ( self.callback.bottomlocked ) {
+					self.callback.bottomlocked();
+				}
 			});
 		},
 		_scroll: function() {
@@ -168,12 +178,19 @@
 				}
 			})
 		},
-		// addEvent proxy
-		bind: function(listener, func) {
+		// triggered callback
+		bind: function(lisneter, func) {
 			var self = this;
-			if ( typeof func !== 'function' ) return;
-			// listener: id + .locked, .bottomlocked, .unlocked
-			_addEvent(self.elm, self.id + listener, func);
+			switch ( lisneter ) {
+			case '.locked':
+				self.callback.locked = func;
+				break;
+			case '.bottomlocked':
+				self.callback.bottomlocked = func;
+				break;
+			case '.unlocked':
+				self.callback.unlocked = func;
+			}
 			return self;
 		}
 	};
