@@ -1,8 +1,15 @@
-(function(window, document, undefined) {
-
-	// Todo
-	// parentを指定すると
-	// parent.height + parent.paddingBottom がlockのボーダーになる
+/**
+ * FixScroll
+ *
+ * @version      0.1
+ * @author       nori (norimania@gmail.com)
+ * @copyright    5509 (http://5509.me/)
+ * @license      The MIT License
+ * @link         https://github.com/5509/fixscroll
+ *
+ * 2011-10-12 00:16
+ */
+;(function(window, document, undefined) {
 
 	window.FixScroll = FixScroll;
 
