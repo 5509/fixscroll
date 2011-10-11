@@ -4,6 +4,27 @@
 <title>FixScroll</title>
 <style>
 
+	#log {
+		padding: 5px 10px;
+		width: 200px;
+		max-height: 300px;
+		position: fixed;
+		top: 10px;
+		right: 10px;
+		overflow: auto;
+		background: #fff;
+		font-size: 12px;
+	}
+
+		#log p {
+			margin: 0;
+			border-bottom: dotted #666 1px;
+			padding: 5px 0;
+		}
+		#log p:last-child {
+			border: none;
+		}
+
 	.boxParent {
 		height: 5000px;
 		background: #555;
@@ -52,6 +73,8 @@
 </head>
 <body>
 
+<div id="log"></div>
+
 <div class="boxParent">
 	<div id="box">
 		<div class="box-header">box-header</div>
@@ -62,8 +85,23 @@
 
 <script src="src/fixscroll.js"></script>
 <script>
+	var logNode = document.getElementById('log');
+	function log(msg) {
+		var p = document.createElement('p'),
+			text = document.createTextNode(msg);
+
+		p.appendChild(text);
+		logNode.appendChild(p);
+	}
+
 	FixScroll('flex-box', {
 		parent: 'box'
+	}).bind('.locked', function() {
+		log('locked');
+	}).bind('.bottomlocked', function() {
+		log('bottomlocked');
+	}).bind('.unlocked', function() {
+		log('unlocked');
 	});
 </script>
 </body>

@@ -167,6 +167,14 @@
 					_trigger(self.elm, self.id + '.unlocked');
 				}
 			})
+		},
+		// addEvent proxy
+		bind: function(listener, func) {
+			var self = this;
+			if ( typeof func !== 'function' ) return;
+			// listener: id + .locked, .bottomlocked, .unlocked
+			_addEvent(self.elm, self.id + listener, func);
+			return self;
 		}
 	};
 
