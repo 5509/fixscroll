@@ -1,13 +1,13 @@
 /**
  * FixScroll
  *
- * @version      0.2
+ * @version      0.3
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/fixscroll
  *
- * 2011-10-12 02:01
+ * 2011-10-13 01:40
  */
 ;(function(window, document, undefined) {
 
@@ -41,6 +41,8 @@
 		// options
 		self.opts = {
 			parent: 'body',
+			topBorder: 'parent', // self
+			bottomBorder: 'parent', // infinite
 			top: 0,
 			bottom: 0
 		};
@@ -67,6 +69,8 @@
 		_getDefault: function() {
 			var self = this,
 				bodyCss,
+				parentCss,
+				elmCss,
 				adjustment = null;
 
 			self.parent = self.opts.parent === 'body'
@@ -79,9 +83,11 @@
 			if ( window.getComputedStyle ) {
 				bodyCss = getComputedStyle(b);
 				parentCss = getComputedStyle(self.parent);
+				elmCss = getComputedStyle(self.elm);
 			} else {
 				bodyCss = b.currentStyle;
 				parentCss = self.parent.currentStyle;
+				elmCss = self.elm.currentStyle;
 			}
 			adjustment = (function() {
 				var _mt = _parseInt(bodyCss['margin-top']),
@@ -101,8 +107,10 @@
 				adjLeft: adjustment.left,
 				ptPdgTop: _parseInt(parentCss['padding-top']),
 				ptPdgBtm: _parseInt(parentCss['padding-bottom']),
-				top: adjustment.top + self.elm.offsetTop,
-				left: adjustment.left + self.elm.offsetLeft
+				elmMgnTop: _parseInt(elmCss['margin-top']),
+				elmPdgTop: _parseInt(elmCss['padding-top']),
+				top: self.elm.offsetTop,
+				left: self.elm.offsetLeft
 			};
 		},
 		_setDefault: function() {
@@ -152,10 +160,10 @@
 			_addEvent(window, 'scroll', function() {
 				var scrollTop = b.scrollTop || dE.scrollTop,
 					defPos = self.defaultPos,
-					sumTop = defPos.top - self.opts.top,
+					sumTop = defPos.top - self.opts.top + self.parent.offsetTop,
 					borderTop = sumTop < 0 ? 0 : sumTop,
 					vScrollTop = scrollTop + self.offsetHeight,
-					vBorderTop = self.parentHeight + defPos.adjTop - defPos.ptPdgBtm;
+					vBorderTop = self.parentHeight - defPos.ptPdgBtm + self.parent.offsetTop;
 
 				// triggered
 				// locked (fixed
@@ -166,6 +174,7 @@
 				} else
 				// bottomlocked (bottomfixed
 				if ( vScrollTop >= vBorderTop ) {
+					if ( self.opts.bottomBorder === 'infinite' ) return;
 					if ( self.state === 'bottomlocked' ) return;
 					self.bottomFix = self.parentHeight - self.offsetHeight - defPos.ptPdgBtm;
 					self.state = 'bottomlocked';
