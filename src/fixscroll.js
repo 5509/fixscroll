@@ -1,20 +1,20 @@
 /**
  * FixScroll
  *
- * @version      0.3
+ * @version      0.4
  * @author       nori (norimania@gmail.com)
  * @copyright    5509 (http://5509.me/)
  * @license      The MIT License
  * @link         https://github.com/5509/fixscroll
  *
- * 2011-10-13 01:40
+ * 2011-10-22 15:38
  */
 ;(function(window, document, undefined) {
 
 	window.FixScroll = FixScroll;
 
-	var b = document.body,
-		dE = document.documentElement,
+	var b = undefined,
+		dE = undefined,
 		ua = (function() {
 			var txt = window.navigator.userAgent;
 			return {
@@ -34,6 +34,7 @@
 		// higher than IE7
 		if ( ua.msie && ua.version < 7 ) return;
 		// new is not necessary
+
 		if ( self === window ) {
 			return new FixScroll(elm, options);
 		}
@@ -46,7 +47,6 @@
 			top: 0,
 			bottom: 0
 		};
-		self.elm = document.getElementById(elm);
 		self.id = elm; // id => id
 		self.state = 'unlocked';
 		self.callback = {};
@@ -62,6 +62,11 @@
 	FixScroll.prototype = {
 		_init: function() {
 			var self = this;
+
+			if ( !b ) b = document.body;
+			if ( !dE ) dE = document.documentElement;
+
+			self.elm = document.getElementById(self.id);
 			self._getDefault();
 			self._scroll();
 			self._bind();
@@ -90,10 +95,10 @@
 				elmCss = self.elm.currentStyle;
 			}
 			adjustment = (function() {
-				var _mt = _parseInt(bodyCss['margin-top']),
-					_ml = _parseInt(bodyCss['margin-left']),
-					_pt = _parseInt(bodyCss['padding-top']),
-					_pl = _parseInt(bodyCss['padding-top']);
+				var _mt = _parseInt(bodyCss['marginTop']),
+					_ml = _parseInt(bodyCss['marginLeft']),
+					_pt = _parseInt(bodyCss['paddingTop']),
+					_pl = _parseInt(bodyCss['paddingTop']);
 
 				return {
 					top: (_mt + _pt) || 0,
@@ -105,10 +110,10 @@
 				position: bodyCss.position,
 				adjTop: adjustment.top,
 				adjLeft: adjustment.left,
-				ptPdgTop: _parseInt(parentCss['padding-top']),
-				ptPdgBtm: _parseInt(parentCss['padding-bottom']),
-				elmMgnTop: _parseInt(elmCss['margin-top']),
-				elmPdgTop: _parseInt(elmCss['padding-top']),
+				ptPdgTop: _parseInt(parentCss['paddingTop']),
+				ptPdgBtm: _parseInt(parentCss['paddingBottom']),
+				elmMgnTop: _parseInt(elmCss['marginTop']),
+				elmPdgTop: _parseInt(elmCss['paddingTop']),
 				top: self.elm.offsetTop,
 				left: self.elm.offsetLeft
 			};
