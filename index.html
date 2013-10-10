@@ -138,6 +138,7 @@
 	<div id="box">
 		<div class="box-header">box-header</div>
 		<div id="flex-box">flexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible positionflexible position</div>
+    <div><p>hogehoge</p></div>
 		<div class="box-footer">box-footer</div>
 	</div>
 	<div id="box2">
@@ -160,7 +161,8 @@
 	}
 
 	var fx1 = FixScroll('flex-box', {
-		parent: 'box'
+		parent: 'box',
+    dummy: true
 	});
 	fx1.bind('.locked', function() {
 		add_text('fx1 .locked');

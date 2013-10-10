@@ -1,35 +1,35 @@
 /**
  * FixScroll
  *
- * @version      0.5
- * @author       nori (norimania@gmail.com)
- * @copyright    5509 (http://5509.me/)
+ * @version      0.6.1
+ * @author       Kazunori Tokuda (norimania@gmail.com)
+ * @copyright    slowjet (http://5509.hatenablog.com)
  * @license      The MIT License
  * @link         https://github.com/5509/fixscroll
  *
- * 2012-03-04 16:09
+ * 2013-10-11 05:16
  */
 ;(function(window, document, undefined) {
 
   window.FixScroll = FixScroll;
 
-  var b = undefined,
-    dE = undefined,
-    ua = (function() {
-      var txt = window.navigator.userAgent;
-      return {
-        msie: txt.indexOf('MSIE') !== -1,
-        version: (function() {
-          if ( txt.match(/MSIE (\d\.\d)/) ) {
-            return RegExp.$1;
-          }
-        }())
-      }
-    }());
+  var b = undefined;
+  var dE = undefined;
+  var ua = (function() {
+    var txt = window.navigator.userAgent;
+    return {
+      msie: txt.indexOf('MSIE') !== -1,
+      version: (function() {
+        if ( txt.match(/MSIE (\d\.\d)/) ) {
+          return RegExp.$1;
+        }
+      }())
+    }
+  }());
 
   function FixScroll(elm, options) {
-    var i,
-      self = this;
+    var i;
+    var self = this;
 
     // higher than IE7
     if ( ua.msie && ua.version < 7 ) return;
@@ -44,8 +44,10 @@
       parent: 'body',
       topBorder: 'parent', // self
       bottomBorder: 'parent', // infinite
+      forceTopClearance: 0, // it's available when it's not possible to correct position
       top: 0,
-      bottom: 0
+      bottom: 0,
+      dummy: false
     };
     self.id = elm; // id => id
     self.state = 'unlocked';
@@ -67,16 +69,27 @@
       if ( !dE ) dE = document.documentElement;
 
       self.elm = document.getElementById(self.id);
+
+      if ( !self.elm ) {
+        return;
+      }
+
       self._getDefault();
+      self._createDummy();
       self._scroll();
       self._bind();
     },
     _getDefault: function() {
-      var self = this,
-        bodyCss,
-        parentCss,
-        elmCss,
-        adjustment = null;
+      var self = this;
+      var bodyCss;
+      var parentCss;
+      var elmCss;
+      var adjustment = null;
+      var bottomBorder;
+      var hasBorderParent;
+      var borderParent;
+      var vBorderTopParentHeight;
+      var top;
 
       self.parent = self.opts.parent === 'body'
         ? document.body
@@ -84,6 +97,14 @@
 
       self.offsetHeight = self.elm.offsetHeight;
       self.parentHeight = self.parent.offsetHeight;
+
+      bottomBorder = self.opts.bottomBorder;
+      hasBorderParent = /^parent|body$/.test(bottomBorder);
+
+      self.borderParent = hasBorderParent ? document.getElementById(bottomBorder) : null;
+      vBorderTopParentHeight = self.borderParent ? self.borderParent.offsetHeight : self.parentHeight;
+
+      self.vBorderTopParentHeight = vBorderTopParentHeight;
 
       if ( window.getComputedStyle ) {
         bodyCss = getComputedStyle(b);
@@ -95,16 +116,22 @@
         elmCss = self.elm.currentStyle;
       }
       adjustment = (function() {
-        var _mt = _parseInt(bodyCss['marginTop']),
-          _ml = _parseInt(bodyCss['marginLeft']),
-          _pt = _parseInt(bodyCss['paddingTop']),
-          _pl = _parseInt(bodyCss['paddingTop']);
+        var _mt = _parseInt(bodyCss['marginTop']);
+        var _ml = _parseInt(bodyCss['marginLeft']);
+        var _pt = _parseInt(bodyCss['paddingTop']);
+        var _pl = _parseInt(bodyCss['paddingTop']);
 
         return {
           top: (_mt + _pt) || 0,
           left: (_ml + _pl) || 0
         };
       }());
+
+      if ( self.opts.forceTopClearance ) {
+        top = self.opts.forceTopClearance + self.elm.offsetTop;
+      } else {
+        top = self.elm.offsetTop;
+      }
 
       self.defaultPos = {
         position: elmCss.position,
@@ -114,20 +141,49 @@
         ptPdgBtm: _parseInt(parentCss['paddingBottom']),
         elmMgnTop: _parseInt(elmCss['marginTop']),
         elmPdgTop: _parseInt(elmCss['paddingTop']),
-        top: self.elm.offsetTop,
+        top: top,
         left: self.elm.offsetLeft
       };
     },
+    _createDummy: function() {
+      var self = this;
+
+      if ( !self.opts.dummy ) {
+        return;
+      }
+      
+      self.dummyElm = document.createElement('div');
+      self.dummyElm.style.height = self.offsetHeight + 'px';
+      self.dummyElm.style.display = 'none';
+
+      self.elm.parentNode.insertBefore(self.dummyElm, self.elm.nextSibling);
+    },
+    _enableDummy: function() {
+      var self = this;
+      if ( !self.opts.dummy ) {
+        return;
+      }
+       self.dummyElm.style.display = 'block';
+    },
+    _disableDummy: function() {
+      var self = this;
+      if ( !self.opts.dummy ) {
+        return;
+      }
+      self.dummyElm.style.display = 'none';
+    },
     _setDefault: function() {
       var self = this;
+      self._disableDummy();
       _styles(self.elm, {
         position: self.defaultPos.position,
         top: self.defaultPos.top + 'px'
       });
-      self.elm.className = self.elm.className.replace(/ ?fixscroll_fixed/, '');
+      self.elm.className = self.elm.className.replace(/ ?fixscroll_fixed/g, '');
     },
     _setFix: function() {
       var self = this;
+      self._enableDummy();
       _styles(self.elm, {
         position: 'fixed',
         top: self.opts.top + 'px'
@@ -140,6 +196,7 @@
         position: 'absolute',
         top: self.bottomFix + 'px'
       });
+      self.elm.className = self.elm.className.replace(/ ?fixscroll_fixed/g, '');
     },
     _bind: function() {
       var self = this;
@@ -165,12 +222,14 @@
     _scroll: function() {
       var self = this;
       _addEvent(window, 'scroll', function() {
-        var scrollTop = b.scrollTop || dE.scrollTop,
-          defPos = self.defaultPos,
-          sumTop = defPos.top - self.opts.top + self.parent.offsetTop,
-          borderTop = sumTop < 0 ? 0 : sumTop,
-          vScrollTop = scrollTop + self.offsetHeight,
-          vBorderTop = self.parentHeight - defPos.ptPdgBtm + self.parent.offsetTop;
+        var scrollTop = b.scrollTop || dE.scrollTop;
+        var defPos = self.defaultPos;
+        var sumTop = defPos.top - self.opts.top + self.parent.offsetTop;
+        var borderTop = sumTop < 0 ? 0 : sumTop;
+        var vScrollTop = scrollTop + self.offsetHeight;
+        var parentOffsetTop = self.borderParent ? self.borderParent.offsetTop : self.parent.offsetTop;
+        var vBorderTop = self.vBorderTopParentHeight - defPos.ptPdgBtm + parentOffsetTop;
+        var parentHeight = self.borderParent ? (self.vBorderTopParentHeight + parentOffsetTop) : self.parentHeight;
 
         // triggered
         // locked (fixed
@@ -183,7 +242,7 @@
         if ( vScrollTop >= vBorderTop ) {
           if ( self.opts.bottomBorder === 'infinite' ) return;
           if ( self.state === 'bottomlocked' ) return;
-          self.bottomFix = self.parentHeight - self.offsetHeight - defPos.ptPdgBtm;
+          self.bottomFix = parentHeight - self.offsetHeight - defPos.ptPdgBtm;
           self.state = 'bottomlocked';
           _trigger(self.elm, self.id + '.bottomlocked');
         // unlocked (not fixed
@@ -256,3 +315,4 @@
   }
 
 }(this, this.document));
+
