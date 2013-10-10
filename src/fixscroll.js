@@ -1,13 +1,13 @@
 /**
  * FixScroll
  *
- * @version      0.6.1
+ * @version      0.6.2
  * @author       Kazunori Tokuda (norimania@gmail.com)
  * @copyright    slowjet (http://5509.hatenablog.com)
  * @license      The MIT License
  * @link         https://github.com/5509/fixscroll
  *
- * 2013-10-11 05:16
+ * 2013-10-11 05:39
  */
 ;(function(window, document, undefined) {
 
@@ -44,7 +44,7 @@
       parent: 'body',
       topBorder: 'parent', // self
       bottomBorder: 'parent', // infinite
-      forceTopClearance: 0, // it's available when it's not possible to correct position
+      forceTopClearance: 0,
       top: 0,
       bottom: 0,
       dummy: false
@@ -89,7 +89,6 @@
       var hasBorderParent;
       var borderParent;
       var vBorderTopParentHeight;
-      var top;
 
       self.parent = self.opts.parent === 'body'
         ? document.body
@@ -127,12 +126,6 @@
         };
       }());
 
-      if ( self.opts.forceTopClearance ) {
-        top = self.opts.forceTopClearance + self.elm.offsetTop;
-      } else {
-        top = self.elm.offsetTop;
-      }
-
       self.defaultPos = {
         position: elmCss.position,
         adjTop: adjustment.top,
@@ -141,7 +134,7 @@
         ptPdgBtm: _parseInt(parentCss['paddingBottom']),
         elmMgnTop: _parseInt(elmCss['marginTop']),
         elmPdgTop: _parseInt(elmCss['paddingTop']),
-        top: top,
+        top: self.opts.forceTopClearance + self.elm.offsetTop,
         left: self.elm.offsetLeft
       };
     },
