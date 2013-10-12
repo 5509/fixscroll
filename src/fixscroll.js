@@ -1,13 +1,13 @@
 /**
  * FixScroll
  *
- * @version      0.6.2
+ * @version      0.6.3
  * @author       Kazunori Tokuda (norimania@gmail.com)
  * @copyright    slowjet (http://5509.hatenablog.com)
  * @license      The MIT License
  * @link         https://github.com/5509/fixscroll
  *
- * 2013-10-11 05:39
+ * 2013-10-11 14:23
  */
 ;(function(window, document, undefined) {
 
@@ -87,7 +87,6 @@
       var adjustment = null;
       var bottomBorder;
       var hasBorderParent;
-      var borderParent;
       var vBorderTopParentHeight;
 
       self.parent = self.opts.parent === 'body'
@@ -216,14 +215,17 @@
       var self = this;
       _addEvent(window, 'scroll', function() {
         var scrollTop = b.scrollTop || dE.scrollTop;
+        var opts = self.opts;
         var defPos = self.defaultPos;
-        var sumTop = defPos.top - self.opts.top + self.parent.offsetTop;
+        var sumTop = defPos.top - opts.top + self.parent.offsetTop;
         var borderTop = sumTop < 0 ? 0 : sumTop;
         var vScrollTop = scrollTop + self.offsetHeight;
         var parentOffsetTop = self.borderParent ? self.borderParent.offsetTop : self.parent.offsetTop;
-        var vBorderTop = self.vBorderTopParentHeight - defPos.ptPdgBtm + parentOffsetTop;
+        var vBorderTop = self.vBorderTopParentHeight - defPos.ptPdgBtm + parentOffsetTop + opts.bottom;
         var parentHeight = self.borderParent ? (self.vBorderTopParentHeight + parentOffsetTop) : self.parentHeight;
 
+        // bottom adjustment
+        parentHeight = parentHeight + opts.bottom;
         // triggered
         // locked (fixed
         if ( scrollTop >= borderTop && vScrollTop < vBorderTop ) {
@@ -308,4 +310,3 @@
   }
 
 }(this, this.document));
-
